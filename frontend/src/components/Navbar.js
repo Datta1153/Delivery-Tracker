@@ -33,6 +33,7 @@ const Navbar = () => {
             <Link to="/dashboard">Dashboard</Link>
             <Link to="/analytics">Analytics</Link>
             <Link to="/ratings">Ratings</Link>
+            <Link to="/chat">Chat</Link>
             {isAuthenticated ? (
               <>
                 <NotificationCenter />

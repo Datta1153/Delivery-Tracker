@@ -399,6 +399,56 @@ textarea {
   font-size: 0.95rem;
 }
 
+/* Chat page styles */
+.chat-page {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 0 16px;
+}
+.chat-window {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  height: 400px;
+  overflow-y: auto;
+  padding: 8px;
+  margin-bottom: 12px;
+  background: #f9f9f9;
+  display: flex;
+  flex-direction: column;
+}
+.message {
+  margin: 4px 0;
+  padding: 8px 12px;
+  border-radius: 20px;
+  max-width: 80%;
+}
+.message.user {
+  background: #dcf8c6;
+  align-self: flex-end;
+}
+.message.ai {
+  background: #fff;
+  border: 1px solid #eee;
+}
+.chat-form {
+  display: flex;
+}
+.chat-form input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px 0 0 4px;
+}
+.chat-form button {
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  border-left: none;
+  border-radius: 0 4px 4px 0;
+  background: #007bff;
+  color: #fff;
+}
+
+
 .package-info strong {
   color: var(--dark-color);
 }

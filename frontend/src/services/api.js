@@ -42,6 +42,8 @@ export const packageAPI = {
     return api.put(`/packages/${id}/status`, statusData);
   },
   deletePackage: (id) => api.delete(`/packages/${id}`),
+  // new AI chat endpoint
+  chatAI: (message) => api.post('/ai/chat', { message }),
 };
 
 export default api;

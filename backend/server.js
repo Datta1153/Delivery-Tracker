@@ -14,6 +14,7 @@ import authRoutes from './routes/authRoutes.js';
 import packageRoutes from './routes/packageRoutes.js';
 import trackRoutes from './routes/trackRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
+import aiRoutes from './routes/aiRoutes.js';
 import { errorHandler } from './middleware/error.js';
 
 dotenv.config();
@@ -61,6 +62,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/packages', packageRoutes);
 app.use('/api/track', trackRoutes); // public tracking lookup
 app.use('/api/reports', reportRoutes);
+app.use('/api/ai', aiRoutes); // new AI chat endpoint
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'Server is running' });

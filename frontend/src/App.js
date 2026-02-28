@@ -17,6 +17,7 @@ const ProfilePage = React.lazy(() => import('./pages/ProfilePage'));
 const AnalyticsPage = React.lazy(() => import('./pages/AnalyticsPage'));
 // RouteOptimizerPage removed
 const RatingsPage = React.lazy(() => import('./pages/RatingsPage'));
+const ChatPage = React.lazy(() => import('./pages/ChatPage'));
 
 function App() {
   return (
@@ -68,6 +69,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <RatingsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/chat"
+                element={
+                  <ProtectedRoute>
+                    <ChatPage />
                   </ProtectedRoute>
                 }
               />

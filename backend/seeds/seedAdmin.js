@@ -10,11 +10,12 @@ const seedAdmin = async () => {
     await connectDB();
 
     // Check if admin already exists
-    const adminExists = await User.findOne({ email: 'admin@deliverytracker.com' });
+    const adminEmail = 'admin@deliverytracker.com';
+    const adminExists = await User.findOne({ email: adminEmail });
     
     if (adminExists) {
       console.log('✅ Admin user already exists');
-      console.log('Email: admin@deliverytracker.com');
+      console.log('Email:', adminEmail);
       console.log('Password: Admin@123');
       process.exit(0);
     }
@@ -22,7 +23,7 @@ const seedAdmin = async () => {
     // Create default admin user
     const admin = new User({
       name: 'Admin User',
-      email: 'admin@deliverytracker.com',
+      email: adminEmail,
       password: 'Admin@123',
       phone: '+1234567890',
       role: 'admin',

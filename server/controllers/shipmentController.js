@@ -27,7 +27,12 @@ const createShipment = async (req, res) => {
             if (!existing) isUnique = true;
         }
 
-        const barcodeUrl = await generateBarcode(newTrackingId);
+        let barcodeUrl = '';
+        try {
+            barcodeUrl = await generateBarcode(newTrackingId);
+        } catch (barcodeErr) {
+            console.error('Barcode generation failed (non-fatal):', barcodeErr.message);
+        }
 
         const shipment = new Shipment({
             trackingId: newTrackingId,
@@ -53,24 +58,25 @@ const createShipment = async (req, res) => {
             updatedBy: req.user._id
         });
 
-        // Send email notification
-        try {
-            const emailMessage = "<h2>Your Order Has Been Created!</h2>" +
-                "<p>Hello " + receiverName + ",</p>" +
-                "<p>Your package from <strong>" + senderName + "</strong> has been registered in our system and is awaiting pickup.</p>" +
-                "<br/>" +
-                "<p>You can track your package live using this Tracking ID: <strong>" + newTrackingId + "</strong></p>" +
-                "<p>Stay tuned for more updates!</p>";
+        // Send email notification (fire-and-forget — never blocks the response)
+        setImmediate(() => {
+            try {
+                const emailMessage = "<h2>Your Order Has Been Created!</h2>" +
+                    "<p>Hello " + receiverName + ",</p>" +
+                    "<p>Your package from <strong>" + senderName + "</strong> has been registered in our system and is awaiting pickup.</p>" +
+                    "<br/>" +
+                    "<p>You can track your package live using this Tracking ID: <strong>" + newTrackingId + "</strong></p>" +
+                    "<p>Stay tuned for more updates!</p>";
 
-            await sendEmail({
-                email: customerEmail,
-                subject: "Logistiq - Order Created (" + newTrackingId + ")",
-                html: emailMessage
-            });
-        } catch (emailErr) {
-            console.error('Failed to send Order Created email:', emailErr);
-            // We don't want to crash the shipment creation if email fails
-        }
+                sendEmail({
+                    email: customerEmail,
+                    subject: "Logistiq - Order Created (" + newTrackingId + ")",
+                    html: emailMessage
+                }).catch(emailErr => console.error('Failed to send Order Created email:', emailErr));
+            } catch (emailErr) {
+                console.error('Failed to format Order Created email:', emailErr);
+            }
+        });
 
         res.status(201).json(createdShipment);
     } catch (error) {
@@ -186,30 +192,32 @@ const updateShipmentStatus = async (req, res) => {
             req.io.to(trackingId).emit('status_update', { shipment, event });
         }
 
-        // Send Email Notification
-        try {
-            let emailMessage = "<h2>Delivery Update: " + status + "</h2>" +
-                "<p>Hello,</p>" +
-                "<p>The status of your package (Tracking ID: <strong>" + trackingId + "</strong>) has been updated.</p>" +
-                "<p><strong>New Status:</strong> <span style=\"color: #2563eb;\">" + status + "</span></p>";
+        // Send Email Notification (fire-and-forget — never blocks the response)
+        setImmediate(() => {
+            try {
+                let emailMessage = "<h2>Delivery Update: " + status + "</h2>" +
+                    "<p>Hello,</p>" +
+                    "<p>The status of your package (Tracking ID: <strong>" + trackingId + "</strong>) has been updated.</p>" +
+                    "<p><strong>New Status:</strong> <span style=\"color: #2563eb;\">" + status + "</span></p>";
 
-            if (location) {
-                emailMessage += "<p><strong>Current Location:</strong> " + location + "</p>";
+                if (location) {
+                    emailMessage += "<p><strong>Current Location:</strong> " + location + "</p>";
+                }
+                if (description) {
+                    emailMessage += "<p><strong>Notes:</strong> " + description + "</p>";
+                }
+
+                emailMessage += "<br/><p>Thank you for using Logistiq.</p>";
+
+                sendEmail({
+                    email: shipment.customerEmail,
+                    subject: "Logistiq Update: " + trackingId + " is " + status,
+                    html: emailMessage
+                }).catch(emailErr => console.error('Failed to send Status Update email:', emailErr));
+            } catch (emailErr) {
+                console.error('Failed to format Status Update email:', emailErr);
             }
-            if (description) {
-                emailMessage += "<p><strong>Notes:</strong> " + description + "</p>";
-            }
-
-            emailMessage += "<br/><p>Thank you for using Logistiq.</p>";
-
-            await sendEmail({
-                email: shipment.customerEmail,
-                subject: "Logistiq Update: " + trackingId + " is " + status,
-                html: emailMessage
-            });
-        } catch (emailErr) {
-            console.error('Failed to send Status Update email:', emailErr);
-        }
+        });
 
         res.json(shipment);
     } catch (error) {

@@ -144,22 +144,28 @@ const registerCustomer = async (req, res) => {
             otpTokenExpire: otpExpire
         });
 
-        // Send OTP via Email
+        // Send OTP via Email (fire-and-forget — respond immediately so Render doesn't time out)
         const emailMessage = `
             <h2>Welcome to Logistiq!</h2>
             <p>Your one-time password (OTP) to activate your account is: <strong>${otp}</strong></p>
             <p>This code will expire in 10 minutes.</p>
         `;
 
-        await sendEmail({
-            email: user.email,
-            subject: 'Logistiq - Verify Your Email (OTP)',
-            html: emailMessage
-        });
-
+        // Respond immediately so the client gets a fast response
         res.status(201).json({
             message: 'Registration successful. Please check your email for the OTP.',
             email: user.email
+        });
+
+        // Send email in background — failures won't affect the user-facing response
+        setImmediate(() => {
+            sendEmail({
+                email: user.email,
+                subject: 'Logistiq - Verify Your Email (OTP)',
+                html: emailMessage
+            }).catch(emailError => {
+                console.error('Failed to send OTP Email:', emailError);
+            });
         });
 
     } catch (error) {

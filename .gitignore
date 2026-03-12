@@ -1,4 +1,30 @@
+# Dependencies
 node_modules/
+
+# Environment variables
 .env
-uploads/
+.env.local
+.env.*.local
+
+# Build output
+client/dist/
+build/
+
+# Logs
+*.log
+error.log
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Uploads (user-generated)
+server/uploads/*
+!server/uploads/.gitkeep
+
+# Gemini
+.gemini/

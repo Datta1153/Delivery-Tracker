@@ -13,7 +13,6 @@ const getAnalytics = async (req, res) => {
 
         // Get recent shipments
         const recentShipments = await Shipment.find()
-            .populate('assignedStaff', 'name')
             .sort({ createdAt: -1 })
             .limit(5);
 

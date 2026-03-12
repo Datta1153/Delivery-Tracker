@@ -6,11 +6,9 @@ import api from '../services/api';
 import { format } from 'date-fns';
 
 const SHIPMENT_STATUSES = [
-    'Order Created',
-    'Picked Up',
-    'Origin Facility',
+    'Pending',
+    'Dispatched',
     'In Transit',
-    'Destination Facility',
     'Out for Delivery',
     'Delivered'
 ];

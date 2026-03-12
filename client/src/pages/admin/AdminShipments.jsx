@@ -13,7 +13,7 @@ const AdminShipments = () => {
     // Form State
     const [formData, setFormData] = useState({
         senderName: '', receiverName: '', originAddress: '',
-        destinationAddress: '', packageWeight: '', assignedStaff: '',
+        destinationAddress: '', packageWeight: '',
         customerEmail: ''
     });
     const [formLoading, setFormLoading] = useState(false);
@@ -26,12 +26,8 @@ const AdminShipments = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [shipmentsRes, staffRes] = await Promise.all([
-                api.get('/shipments'),
-                api.get('/auth/staff')
-            ]);
+            const shipmentsRes = await api.get('/shipments');
             setShipments(shipmentsRes.data.shipments);
-            setStaffList(staffRes.data);
         } catch (err) {
             console.error(err);
         } finally {
@@ -54,14 +50,11 @@ const AdminShipments = () => {
         setFormLoading(true);
         try {
             const payload = { ...formData };
-            if (!payload.assignedStaff) {
-                delete payload.assignedStaff;
-            }
             const res = await api.post('/shipments', payload);
             setCreatedShipment(res.data);
             setFormData({
                 senderName: '', receiverName: '', originAddress: '',
-                destinationAddress: '', packageWeight: '', assignedStaff: '',
+                destinationAddress: '', packageWeight: '',
                 customerEmail: ''
             });
             fetchData(); // Refresh list
@@ -133,7 +126,7 @@ const AdminShipments = () => {
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-secondary-500 uppercase tracking-wider">Tracking ID</th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-secondary-500 uppercase tracking-wider">Route</th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-secondary-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold text-secondary-500 uppercase tracking-wider">Assigned Staff</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-secondary-500 uppercase tracking-wider">Proof</th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-secondary-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
@@ -161,7 +154,19 @@ const AdminShipments = () => {
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
-                                        {shipment.assignedStaff ? shipment.assignedStaff.name : <span className="text-red-400 italic">Unassigned</span>}
+                                        {shipment.status === 'Delivered' && shipment.proofOfDelivery ? (
+                                            <a
+                                                href={`http://localhost:5000${shipment.proofOfDelivery}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-primary-600 hover:text-primary-800 underline flex items-center gap-1"
+                                                title="View Proof of Delivery"
+                                            >
+                                                View Image
+                                            </a>
+                                        ) : (
+                                            <span className="text-slate-400">N/A</span>
+                                        )}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <button onClick={() => setDeleteConfirmId(shipment._id)} className="text-red-600 hover:text-red-900 transition-colors cursor-pointer" title="Delete Package">
@@ -171,7 +176,7 @@ const AdminShipments = () => {
                                 </tr>
                             ))}
                             {shipments.length === 0 && (
-                                <tr><td colSpan="5" className="px-6 py-8 text-center text-secondary-500">No shipments found.</td></tr>
+                                <tr><td colSpan="6" className="px-6 py-8 text-center text-secondary-500">No shipments found.</td></tr>
                             )}
                         </tbody>
                     </table>
@@ -258,15 +263,6 @@ const AdminShipments = () => {
                                                     <div>
                                                         <label className="block text-sm font-medium text-secondary-700 mb-1">Package Weight (kg)</label>
                                                         <input required type="number" step="0.1" value={formData.packageWeight} onChange={e => setFormData({ ...formData, packageWeight: e.target.value })} className="w-full border-slate-300 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 p-2.5 border outline-none" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-secondary-700 mb-1">Assign Staff (Optional)</label>
-                                                        <select value={formData.assignedStaff} onChange={e => setFormData({ ...formData, assignedStaff: e.target.value })} className="w-full border-slate-300 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 p-2.5 border outline-none bg-white">
-                                                            <option value="">-- Select Staff --</option>
-                                                            {staffList.map(staff => (
-                                                                <option key={staff._id} value={staff._id}>{staff.name}</option>
-                                                            ))}
-                                                        </select>
                                                     </div>
                                                 </div>
                                             </div>

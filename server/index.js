@@ -10,8 +10,10 @@ const { Server } = require('socket.io');
 
 dotenv.config();
 
+console.log('1. Env loaded. Connecting to Express...');
 const app = express();
 const server = http.createServer(app);
+console.log('2. Express created');
 const io = new Server(server, {
     cors: {
         origin: '*', // For development, allow all origins
@@ -55,7 +57,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// Database connection
+console.log('5. Connecting to MongoDB...', process.env.MONGODB_URI ? 'URI exists' : 'URI missing');
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => {
         console.log('Connected to MongoDB');

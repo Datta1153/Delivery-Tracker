@@ -15,8 +15,7 @@ const createShipment = async (req, res) => {
             originAddress,
             destinationAddress,
             packageWeight,
-            customerEmail,
-            assignedStaff
+            customerEmail
         } = req.body;
 
         // Generate unique Tracking ID & Barcode
@@ -39,9 +38,8 @@ const createShipment = async (req, res) => {
             destinationAddress,
             packageWeight,
             customerEmail,
-            assignedStaff,
             createdBy: req.user._id,
-            status: 'Order Created'
+            status: 'Pending'
         });
 
         const createdShipment = await shipment.save();
@@ -49,7 +47,7 @@ const createShipment = async (req, res) => {
         // Create initial tracking event
         await TrackingEvent.create({
             shipment: createdShipment._id,
-            status: 'Order Created',
+            status: 'Pending',
             location: originAddress,
             description: 'Shipment order has been created in the system.',
             updatedBy: req.user._id
@@ -89,11 +87,9 @@ const getShipments = async (req, res) => {
         const pageSize = Number(req.query.limit) || 10;
         const page = Number(req.query.page) || 1;
 
-        // Staff can only see their assigned shipments (unless admin)
+        // Customers only see their own shipments
         const query = {};
-        if (req.user.role === 'STAFF') {
-            query.assignedStaff = req.user._id;
-        } else if (req.user.role === 'CUSTOMER') {
+        if (req.user.role === 'CUSTOMER') {
             query.customerEmail = req.user.email;
         }
 
@@ -111,7 +107,6 @@ const getShipments = async (req, res) => {
         const count = await Shipment.countDocuments({ ...query, ...searchKeyword });
         const shipments = await Shipment.find({ ...query, ...searchKeyword })
             .populate('createdBy', 'name email')
-            .populate('assignedStaff', 'name email')
             .limit(pageSize)
             .skip(pageSize * (page - 1))
             .sort({ createdAt: -1 });
@@ -128,7 +123,6 @@ const getShipments = async (req, res) => {
 const getShipmentByTrackingId = async (req, res) => {
     try {
         const shipment = await Shipment.findOne({ trackingId: req.params.trackingId })
-            .populate('assignedStaff', 'name email')
             .populate('createdBy', 'name email');
 
         if (!shipment) {
@@ -156,10 +150,7 @@ const updateShipmentStatus = async (req, res) => {
             return res.status(404).json({ message: 'Shipment not found' });
         }
 
-        // Role check: Staff can only update assigned shipments
-        if (req.user.role === 'STAFF' && shipment.assignedStaff?.toString() !== req.user._id.toString()) {
-            return res.status(403).json({ message: 'Not authorized to update this shipment' });
-        }
+
 
         // Strict Workflow Validation
         const currentStatusIndex = SHIPMENT_STATUSES.indexOf(shipment.status);

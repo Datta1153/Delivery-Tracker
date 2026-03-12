@@ -1,11 +1,9 @@
 const mongoose = require('mongoose');
 
 const SHIPMENT_STATUSES = [
-    'Order Created',
-    'Picked Up',
-    'Origin Facility',
+    'Pending',
+    'Dispatched',
     'In Transit',
-    'Destination Facility',
     'Out for Delivery',
     'Delivered'
 ];
@@ -22,9 +20,8 @@ const shipmentSchema = new mongoose.Schema({
     status: {
         type: String,
         enum: SHIPMENT_STATUSES,
-        default: 'Order Created'
+        default: 'Pending'
     },
-    assignedStaff: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     proofOfDelivery: { type: String }, // URL/Path to file
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 }, { timestamps: true });

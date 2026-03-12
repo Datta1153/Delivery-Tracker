@@ -29,6 +29,17 @@ app.use(morgan('dev'));
 // Static folder for proof of delivery uploads
 app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 
+// Canary endpoint to verify deployment version
+app.get('/api/ping', (req, res) => {
+    res.json({ ok: true, version: 'v3-io-middleware-fix', time: new Date().toISOString() });
+});
+
+// Pass io to routes BEFORE route handlers so req.io is available inside them
+app.use((req, res, next) => {
+    req.io = io;
+    next();
+});
+
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/shipments', require('./routes/shipmentRoutes'));
@@ -60,11 +71,7 @@ io.on('connection', (socket) => {
     });
 });
 
-// Pass io to routes so they can emit events
-app.use((req, res, next) => {
-    req.io = io;
-    next();
-});
+// Note: req.io middleware has been moved ABOVE the route definitions
 
 console.log('5. Connecting to MongoDB...', process.env.MONGODB_URI ? 'URI exists' : 'URI missing');
 mongoose.connect(process.env.MONGODB_URI)

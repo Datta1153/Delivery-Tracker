@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { Plus, Search, MapPin, Loader2, X, Trash2 } from 'lucide-react';
 
+const SERVER_URL = import.meta.env.PROD ? '' : 'http://localhost:5000';
+
 const AdminShipments = () => {
     const [shipments, setShipments] = useState([]);
     const [staffList, setStaffList] = useState([]);
@@ -156,7 +158,7 @@ const AdminShipments = () => {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
                                         {shipment.status === 'Delivered' && shipment.proofOfDelivery ? (
                                             <a
-                                                href={`http://localhost:5000${shipment.proofOfDelivery}`}
+                                                href={`${SERVER_URL}${shipment.proofOfDelivery}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="text-primary-600 hover:text-primary-800 underline flex items-center gap-1"

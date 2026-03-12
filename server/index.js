@@ -35,6 +35,15 @@ app.use('/api/shipments', require('./routes/shipmentRoutes'));
 app.use('/api/upload', require('./routes/uploadRoutes'));
 app.use('/api/analytics', require('./routes/analyticsRoutes'));
 
+// Serve frontend in production
+if (process.env.NODE_ENV === 'production') {
+    const clientBuildPath = path.join(__dirname, '..', 'client', 'dist');
+    app.use(express.static(clientBuildPath));
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(clientBuildPath, 'index.html'));
+    });
+}
+
 const PORT = process.env.PORT || 5000;
 
 // Socket.io for Real-time Tracking Updates

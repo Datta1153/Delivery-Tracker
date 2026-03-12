@@ -2,6 +2,7 @@ import { useState, useEffect, lazy, Suspense } from 'react';
 import api from '../../services/api';
 import { Package, Truck, CheckCircle2, MapPin, UploadCloud, Loader2, Scan } from 'lucide-react';
 
+const SERVER_URL = import.meta.env.PROD ? '' : 'http://localhost:5000';
 const QRScanner = lazy(() => import('../../components/QRScanner'));
 
 const SHIPMENT_STATUSES = [
@@ -245,9 +246,9 @@ const StaffDashboard = () => {
                                             <CheckCircle2 size={16} className="text-green-500 mr-2" />
                                             Proof of Delivery Attached
                                         </h4>
-                                        <a href={`http://localhost:5000${selectedShipment.proofOfDelivery}`} target="_blank" rel="noopener noreferrer">
+                                        <a href={`${SERVER_URL}${selectedShipment.proofOfDelivery}`} target="_blank" rel="noopener noreferrer">
                                             <img
-                                                src={`http://localhost:5000${selectedShipment.proofOfDelivery}`}
+                                                src={`${SERVER_URL}${selectedShipment.proofOfDelivery}`}
                                                 alt="Proof of Delivery"
                                                 className="w-full h-48 object-cover rounded-xl border border-slate-200 shadow-sm hover:opacity-90 transition-opacity cursor-pointer"
                                             />

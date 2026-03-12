@@ -5,6 +5,8 @@ import { io } from 'socket.io-client';
 import api from '../services/api';
 import { format } from 'date-fns';
 
+const SERVER_URL = import.meta.env.PROD ? '' : 'http://localhost:5000';
+
 const SHIPMENT_STATUSES = [
     'Pending',
     'Dispatched',
@@ -56,7 +58,7 @@ const TrackingPortal = () => {
         if (!data?.shipment?.trackingId) return;
 
         // Connect to websocket
-        const socket = io('http://localhost:5000');
+        const socket = io(SERVER_URL);
 
         socket.emit('join_tracking', data.shipment.trackingId);
 
@@ -220,7 +222,7 @@ const TrackingPortal = () => {
                                 {data.shipment.proofOfDelivery && (
                                     <div className="mt-6">
                                         <a
-                                            href={`http://localhost:5000${data.shipment.proofOfDelivery}`}
+                                            href={`${SERVER_URL}${data.shipment.proofOfDelivery}`}
                                             target="_blank"
                                             rel="noreferrer"
                                             className="w-full flex justify-center items-center py-2 px-4 border border-secondary-300 rounded-lg shadow-sm text-sm font-medium text-secondary-700 bg-white hover:bg-slate-50 transition-colors"

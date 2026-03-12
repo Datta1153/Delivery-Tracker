@@ -13,21 +13,27 @@ const generateTrackingId = () => {
     return `TRK-${year}${month}${day}-${randomStr}`;
 };
 
-// Generate barcode image as base64
+// Generate barcode image as base64 (with 5s timeout to prevent hanging on Render)
 const generateBarcode = async (text) => {
+    const barcodePromise = bwipjs.toBuffer({
+        bcid: 'code128',       // Barcode type
+        text: text,            // Text to encode
+        scale: 3,              // 3x scaling factor
+        height: 10,            // Bar height, in millimeters
+        includetext: true,     // Show human-readable text
+        textxalign: 'center',  // Always good to set this
+    });
+
+    const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Barcode generation timed out')), 5000)
+    );
+
     try {
-        const pngBuffer = await bwipjs.toBuffer({
-            bcid: 'code128',       // Barcode type
-            text: text,            // Text to encode
-            scale: 3,              // 3x scaling factor
-            height: 10,            // Bar height, in millimeters
-            includetext: true,     // Show human-readable text
-            textxalign: 'center',  // Always good to set this
-        });
+        const pngBuffer = await Promise.race([barcodePromise, timeoutPromise]);
         return `data:image/png;base64,${pngBuffer.toString('base64')}`;
     } catch (err) {
-        console.error(err);
-        throw new Error('Barcode generation failed');
+        console.error('Barcode generation failed:', err.message);
+        throw err;
     }
 };
 

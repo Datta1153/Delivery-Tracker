@@ -10,31 +10,46 @@ const { Server } = require('socket.io');
 
 dotenv.config();
 
+// Disable mongoose command buffering — operations fail immediately if DB not ready
+// instead of silently hanging for 30 seconds
+mongoose.set('bufferCommands', false);
+
 console.log('1. Env loaded. Connecting to Express...');
 const app = express();
 const server = http.createServer(app);
 console.log('2. Express created');
 const io = new Server(server, {
     cors: {
-        origin: '*', // For development, allow all origins
+        origin: '*',
     }
 });
 
 app.use(express.json());
 app.use(cors());
 app.use(helmet());
-app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" })); // For images
+app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan('dev'));
+
+// Global request timeout — no request should ever hang more than 20 seconds
+app.use((req, res, next) => {
+    res.setTimeout(20000, () => {
+        if (!res.headersSent) {
+            console.error(`[TIMEOUT] Request timed out: ${req.method} ${req.url}`);
+            res.status(503).json({ message: 'Request timed out. Please try again.' });
+        }
+    });
+    next();
+});
 
 // Static folder for proof of delivery uploads
 app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 
-// Canary endpoint to verify deployment version
+// Canary endpoint to verify deployment version (no auth required)
 app.get('/api/ping', (req, res) => {
-    res.json({ ok: true, version: 'v3-io-middleware-fix', time: new Date().toISOString() });
+    res.json({ ok: true, version: 'v4-final-fix', time: new Date().toISOString() });
 });
 
-// Pass io to routes BEFORE route handlers so req.io is available inside them
+// Pass io to routes BEFORE route handlers
 app.use((req, res, next) => {
     req.io = io;
     next();
@@ -71,10 +86,12 @@ io.on('connection', (socket) => {
     });
 });
 
-// Note: req.io middleware has been moved ABOVE the route definitions
-
 console.log('5. Connecting to MongoDB...', process.env.MONGODB_URI ? 'URI exists' : 'URI missing');
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(process.env.MONGODB_URI, {
+    serverSelectionTimeoutMS: 10000, // Fail fast if Atlas unreachable (not 30s default)
+    socketTimeoutMS: 30000,          // Max time for any single DB operation
+    connectTimeoutMS: 10000,         // Max time to establish initial connection
+})
     .then(async () => {
         console.log('Connected to MongoDB');
 
@@ -121,4 +138,5 @@ mongoose.connect(process.env.MONGODB_URI)
     })
     .catch(err => {
         console.error('MongoDB connection error:', err);
+        process.exit(1); // Exit so Render restarts the process
     });

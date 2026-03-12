@@ -9,8 +9,8 @@ mongoose.connect(process.env.MONGODB_URI)
         console.log('Connected to MongoDB');
 
         // Check if admin exists
-        const adminExists = await User.findOne({ email: 'admin@logistiq.com' });
-        if (!adminExists) {
+        const adminUser = await User.findOne({ email: 'admin@logistiq.com' });
+        if (!adminUser) {
             await User.create({
                 name: 'System Admin',
                 email: 'admin@logistiq.com',
@@ -18,11 +18,15 @@ mongoose.connect(process.env.MONGODB_URI)
                 role: 'ADMIN'
             });
             console.log('Admin user created');
+        } else {
+            adminUser.password = 'password123';
+            await adminUser.save();
+            console.log('Admin user password reset');
         }
 
         // Check if staff exists
-        const staffExists = await User.findOne({ email: 'staff@logistiq.com' });
-        if (!staffExists) {
+        const staffUser = await User.findOne({ email: 'staff@logistiq.com' });
+        if (!staffUser) {
             await User.create({
                 name: 'John Delivery',
                 email: 'staff@logistiq.com',
@@ -30,6 +34,10 @@ mongoose.connect(process.env.MONGODB_URI)
                 role: 'STAFF'
             });
             console.log('Staff user created');
+        } else {
+            staffUser.password = 'password123';
+            await staffUser.save();
+            console.log('Staff user password reset');
         }
 
         console.log('Seed completed');

@@ -7,7 +7,7 @@
     "install-all": "cd server && npm install && cd ../client && npm install",
     "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\"",
     "build": "cd client && npm install && npm run build",
-    "start": "cd server && node index.js",
+    "start": "cd server && node seed.js && node index.js",
     "render-build": "cd client && npm install --include=dev && npm run build && cd ../server && npm install"
   },
   "keywords": [
